@@ -1,6 +1,7 @@
 CREATE DATABASE Bilskrot;
 USE Bilskrot;
 
+-- Tabell för alla bildelar
 CREATE TABLE Parts (
 	PartID INT AUTO_INCREMENT PRIMARY KEY,
     Part VARCHAR(100) NOT NULL,
@@ -9,6 +10,7 @@ CREATE TABLE Parts (
     Quantity INT NOT NULL
 );
 
+-- Tabell för alla kunder och deras information
 CREATE TABLE Customers ( 
 	CustomerID INT AUTO_INCREMENT PRIMARY KEY, 
 	FullName VARCHAR(100) NOT NULL, 
@@ -18,6 +20,7 @@ CREATE TABLE Customers (
     Balance INT DEFAULT 5000 NOT NULL
 );
 
+-- Tabell för alla beställningar
 CREATE TABLE Orders (
 	OrderID INT AUTO_INCREMENT PRIMARY KEY,
     CustomerID INT NOT NULL,
@@ -26,6 +29,7 @@ CREATE TABLE Orders (
     FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
 );
 
+-- Tabell för beställningsraderna
 CREATE TABLE Orderrows (
 	OrderrowID INT AUTO_INCREMENT PRIMARY KEY,
     OrderID INT NOT NULL,
@@ -84,7 +88,6 @@ DELIMITER $$
 CREATE PROCEDURE ShowOrders ()
 BEGIN
 	SELECT
-    Orderrows.OrderrowID,
     Orders.OrderID,
     Orders.DateAndTime,
     Orders.TotalAmount,
@@ -97,6 +100,16 @@ BEGIN
 	INNER JOIN Orders ON Orderrows.OrderID = Orders.OrderID
 	INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID
 	INNER JOIN Parts ON Orderrows.PartID = Parts.PartID;
+END$$
+DELIMITER ;
+
+-- Funktion för att kunna separat söka upp alla delar till en specifik bil
+DELIMITER $$
+CREATE PROCEDURE ShowPartsForCar (
+	in in_FitsToCar VARCHAR(100)
+)
+BEGIN
+	SELECT PartID, Part, Price, Quantity FROM Parts WHERE FitsToCar = in_FitsToCar;
 END$$
 DELIMITER ;
 
@@ -126,11 +139,7 @@ DELIMITER ;
 
 -- Test exempel på en ny beställning 
 CALL MakeOrder('erik.svensson@email.com', 1, 2);
+CALL MakeOrder('anna.johansson@email.com', 2, 1);
 
 -- Test exempel på funktionen som visar alla ordrar
 CALL ShowOrders();
-
-SELECT * FROM Parts;
-SELECT * FROM Customers;
-SELECT * FROM Orders;
-SELECT * FROM Orderrows;
